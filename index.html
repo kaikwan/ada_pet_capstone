@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<style>
+  ul li { margin-bottom: 20px; list-style: none; }
+  #camera { display: none; }
+  #buttons { display: none; position: relative; left: 250px; top:-100px; }
+  img#cameraImage { transform: rotate(90deg); position: relative; left: -80px; top: 100px;}
+</style>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hello-vinitha/roslibjs@ros2actionclient/build/roslib.min.js"></script>
+<script type="text/javascript" type="text/javascript">
+  // Connection to rocky
+  let ros = new ROSLIB.Ros({
+    url: 'ws://rocky.hcrlab.cs.washington.edu:9090'
+  });
+
+  // Holding place for the FollowJointTrajectory client
+  let trajectoryClient;
+
+  // Create subscription to the camera video topic
+  const subscribeToCameraVideo = () => {
+    let cameraImage = document.getElementById("cameraImage");
+    let topic = new ROSLIB.Topic({
+        ros: ros,
+        name: "/camera/color/image_raw/compressed",
+        messageType: "sensor_msgs/CompressedImage",
+    });
+    topic.subscribe((message) => {
+      cameraImage.src = "data:image/jpg;base64," + message.data;
+    });
+  };
+
+  // Create a handle to the FollowJointTrajectory action
+  const createTrajectoryClient = () => {
+    trajectoryClient = new ROSLIB.ActionHandle({
+      ros: ros,
+      name: "/stretch_controller/follow_joint_trajectory",
+      actionType: "control_msgs/action/FollowJointTrajectory",
+    });
+  };
+
+  // Execute a FollowJointTrajectory action for given joints
+  // See valid joints here: https://github.com/hello-robot/stretch_web_teleop/blob/master/src/shared/util.tsx#L4-L20
+  // and joint limits here: https://github.com/hello-robot/stretch_web_teleop/blob/master/src/shared/util.tsx#L304
+  const executeFollowJointTrajectory = (jointNames, jointPositions) => {
+    let goal = new ROSLIB.ActionGoal({
+      trajectory: {
+        header: { stamp: { secs: 0, nsecs: 0 } },
+        joint_names: jointNames,
+        points: [
+          {
+            positions: jointPositions,
+            time_from_start: { secs: 1, nsecs: 0 },
+          },
+        ],
+      },
+    });
+    trajectoryClient.createClient(goal);
+  };
+
+  // Open the gripper using FollowJointTrajectory
+  const openGripper = () => {
+    executeFollowJointTrajectory(['gripper_aperture'], [0.1])
+  };
+
+  // Close the gripper using FollowJointTrajectory
+  const closeGripper = () => {
+    executeFollowJointTrajectory(['gripper_aperture'], [-0.03])
+  };
+
+  // Move the lift using FollowJointTrajectory
+  const moveLiftToTop = () => {
+    executeFollowJointTrajectory(['joint_lift'], [1.1]);
+  };
+
+  // Move the lift using FollowJointTrajectory
+  const moveLiftToMiddle = () => {
+    executeFollowJointTrajectory(['joint_lift'], [0.6]);
+  };
+
+  // Move base forward
+  const moveBaseForward = () => {
+    executeFollowJointTrajectory(['translate_mobile_base'], [0.1]);
+  };
+
+  // Move base backward
+  const moveBaseBackward = () => {
+    executeFollowJointTrajectory(['translate_mobile_base'], [-0.1]);
+  };
+
+  // Called when the rosbridge websocket connection is successful
+  ros.on('connection', function() {
+    document.getElementById('connection').innerHTML = "Connected to Stretch.";
+    document.getElementById('camera').style.display = "block";
+    document.getElementById('buttons').style.display = "block";
+    console.log('Connected to websocket server.');
+  
+    subscribeToCameraVideo();
+    createTrajectoryClient();
+  });
+
+  // Called when the rosbridge websocket connection is failed
+  ros.on('error', function(error) {
+    document.getElementById('connection').innerHTML = "Error connecting to Stretch (see console for details)";
+    console.log('Error connecting to websocket server: ', error);
+  });
+
+  // Called when the rosbridge websocket connection is closed
+  ros.on('close', function() {
+    document.getElementById('connection').innerHTML = "Disconnected";
+    document.getElementById('camera').style.display = "none";
+    document.getElementById('connection').style.display = "none";
+    console.log('Connection to websocket server closed.');
+  });
+</script>
+
+<body>
+  <h1>Simple roslib Example</h1>
+  <p id="connection">Connecting...</p>
+  <div id="camera"><img id="cameraImage" /></div>
+  <div id="buttons">
+    <ul>
+        <li><button onClick="openGripper()">Open gripper</button></li>
+        <li><button onClick="closeGripper()">Close gripper</button></li>
+        <li><button onClick="moveBaseForward()">Move base forward</button></li>
+        <li><button onClick="moveBaseBackward()">Move base backward</button></li>
+        <li><button onClick="moveLiftToTop()">Move lift to top</button></li>
+        <li><button onClick="moveLiftToMiddle()">Move lift to middle</button></li>
+    </ul>
+  </div>
+</body>
+</html>

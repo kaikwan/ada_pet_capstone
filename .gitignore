@@ -1,0 +1,36 @@
+# ROS 2 build artifacts
+build/
+install/
+log/
+
+# Colcon metadata
+.colcon/
+
+# ROS 2 workspace config files
+*.yaml
+*.log
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Temporary files
+*.swp
+*.swo
+*.tmp
+*~
+
+# Environment files
+.env
