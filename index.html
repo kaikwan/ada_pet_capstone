@@ -3,22 +3,78 @@
 <head>
 <meta charset="utf-8" />
 
-<style>
-  ul li { margin-bottom: 20px; list-style: none; }
-  #camera { display: none; }
-  #buttons { display: none; position: relative; left: 250px; top:-100px; }
-  img#cameraImage { transform: rotate(90deg); position: relative; left: -80px; top: 100px;}
-</style>
-
 <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hello-vinitha/roslibjs@ros2actionclient/build/roslib.min.js"></script>
-<script type="text/javascript" type="text/javascript">
-  // Connection to rocky
+<script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
+<script type="text/javascript">
+  // Constants
+  const CLICK_CLICK_SPEEDS = {
+    slow: 0.05, // Slow speed increment
+    fast: 0.2,  // Fast speed increment
+  };
+
+  const JOINT_LIMITS = {
+    yaw: { min: -1.57, max: 1.57 },
+    pitch: { min: -1.0, max: 1.0 },
+    roll: { min: -1.0, max: 1.0 }
+  };
+
+  const LIFT_ARM_LIMITS = {
+    lift: { min: 0.0, max: 1.0947933438242243 }, // Lift range
+    arm: { min: 0.0, max: 0.5154697810672271 },  // Arm extension range
+  };
+
+  // Variables
   let ros = new ROSLIB.Ros({
     url: 'ws://rocky.hcrlab.cs.washington.edu:9090'
   });
-
-  // Holding place for the FollowJointTrajectory client
   let trajectoryClient;
+  let runstopState = false;
+  let selectedJoint = 'yaw'; // Default to yaw
+  let isSliderActive = false; // Flag to track if the slider is being controlled
+  let currentJointPositions = { yaw: 0.0, pitch: 0.0, roll: 0.0 }; // Store current positions
+  let selectedControl = 'lift'; // Default to lift
+  let currentControlPositions = { lift: 0.0, arm: 0.0 }; // Store current positions for lift and arm
+  let jointInterval = null; // Variable to store the interval ID for continuous movement
+  let jointIncrement = CLICK_CLICK_SPEEDS.slow; // Default increment is slow
+  let joystickInstance = null; // Store the joystick instance
+
+  // Function to toggle the runstop state
+  const toggleRunstop = () => {
+    runstopState = !runstopState; // Toggle the state
+
+    const runstopService = new ROSLIB.Service({
+      ros: ros,
+      name: '/runstop',
+      serviceType: 'std_srvs/srv/SetBool',
+    });
+
+    const request = new ROSLIB.ServiceRequest({
+      data: runstopState,
+    });
+
+    runstopService.callService(request, (result) => {
+      if (result.success) {
+        console.log(`Runstop state set to ${runstopState}:`, result.message);
+        updateRunstopButton();
+      } else {
+        console.error('Failed to toggle runstop:', result.message);
+      }
+    });
+  };
+
+  // Function to update the toggle button's text and style
+  const updateRunstopButton = () => {
+    const runstopButton = document.getElementById('runstopButton');
+    if (runstopState) {
+      runstopButton.textContent = 'Runstop ON';
+      runstopButton.style.backgroundColor = 'red';
+      runstopButton.style.color = 'white';
+    } else {
+      runstopButton.textContent = 'Runstop OFF';
+      runstopButton.style.backgroundColor = 'yellow';
+      runstopButton.style.color = 'black';
+    }
+  };
 
   // Create subscription to the camera video topic
   const subscribeToCameraVideo = () => {
@@ -61,6 +117,7 @@
     trajectoryClient.createClient(goal);
   };
 
+  /////////////////////ABSOLUTE CONTROLS/////////////////////
   // Open the gripper using FollowJointTrajectory
   const openGripper = () => {
     executeFollowJointTrajectory(['gripper_aperture'], [0.1])
@@ -91,15 +148,258 @@
     executeFollowJointTrajectory(['translate_mobile_base'], [-0.1]);
   };
 
+  // Extend the arm to the middle position using FollowJointTrajectory
+  const extendArmFully = () => {
+    executeFollowJointTrajectory(['wrist_extension'], [0.5]);
+  };
+
+  // Retract the arm fully using FollowJointTrajectory
+  const retractArmFully = () => {
+    executeFollowJointTrajectory(['wrist_extension'], [0.0]);
+  };
+
+  // Adjust the wrist to the default position using FollowJointTrajectory
+  const resetWristToDefault = () => {
+    executeFollowJointTrajectory(['joint_wrist_yaw', 'joint_wrist_pitch', 'joint_wrist_roll'], [0.0, 0.0, 0.0]);
+  };
+  // Move the selected joint to an absolute position using FollowJointTrajectory
+  const moveSelectedJointToAbsolute = (position) => {
+    const jointNames = {
+      yaw: 'joint_wrist_yaw',
+      pitch: 'joint_wrist_pitch',
+      roll: 'joint_wrist_roll',
+    };
+
+    executeFollowJointTrajectory([jointNames[selectedJoint]], [position]);
+  };
+
+  /////////////////////CLICK CLICK CONTROLS/////////////////////
+  // Subscribe to the joint states topic to get the current positions of yaw, pitch, roll, lift, and arm
+  const subscribeToJointStates = () => {
+    const jointStateTopic = new ROSLIB.Topic({
+      ros: ros,
+      name: '/stretch/joint_states', // Replace with the correct topic for joint states
+      messageType: 'sensor_msgs/JointState',
+    });
+
+    jointStateTopic.subscribe((message) => {
+      const jointIndices = {
+        yaw: message.name.indexOf('joint_wrist_yaw'),
+        pitch: message.name.indexOf('joint_wrist_pitch'),
+        roll: message.name.indexOf('joint_wrist_roll'),
+        lift: message.name.indexOf('joint_lift'),
+        arm: message.name.indexOf('wrist_extension'),
+      };
+
+      for (const joint in jointIndices) {
+        if (jointIndices[joint] !== -1) {
+          if (joint === 'lift' || joint === 'arm') {
+            currentControlPositions[joint] = message.position[jointIndices[joint]];
+          } else {
+            currentJointPositions[joint] = message.position[jointIndices[joint]];
+          }
+        }
+      }
+
+      // Update the wrist slider only if it is not being actively controlled
+      if (!isSliderActive) {
+        updateSliderForSelectedJoint();
+      }
+
+      // Update the control slider only if it is not being actively controlled
+      if (!isSliderActive) {
+        updateSliderForSelectedControl();
+      }
+    });
+  };
+
+  // Generic function to move the selected joint incrementally
+  const moveSelectedJoint = (direction) => {
+    const newPosition = currentJointPositions[selectedJoint] + direction * jointIncrement;
+
+    // Ensure the new position is within joint limits
+    const limits = JOINT_LIMITS[selectedJoint];
+    if (newPosition >= limits.min && newPosition <= limits.max) {
+      executeFollowJointTrajectory([`joint_wrist_${selectedJoint}`], [newPosition]);
+      currentJointPositions[selectedJoint] = newPosition; // Update the current position
+    }
+  };
+
+  /////////////////////UI INTERACTIONS/////////////////////
+  // Update the joint speed based on the selected option
+  const updateJointSpeed = (speed) => {
+    jointIncrement = CLICK_CLICK_SPEEDS[speed];
+  };
+
+  // Update the slider and displayed value based on the selected joint
+  const updateSliderForSelectedJoint = () => {
+    const slider = document.getElementById('jointSlider');
+    const sliderValue = document.getElementById('jointValue');
+    const limits = JOINT_LIMITS[selectedJoint];
+
+    slider.min = limits.min;
+    slider.max = limits.max;
+    slider.value = currentJointPositions[selectedJoint].toFixed(2);
+    sliderValue.textContent = slider.value;
+  };
+
+  // Start continuous movement for the selected joint
+  const startMoveSelectedJoint = (direction) => {
+    if (!jointInterval) {
+      jointInterval = setInterval(() => moveSelectedJoint(direction), 100); // Adjust interval time as needed
+    }
+  };
+
+  // Stop continuous movement for the selected joint
+  const stopMoveSelectedJoint = () => {
+    clearInterval(jointInterval);
+    jointInterval = null;
+  };
+
+  // Update the slider and displayed value based on the selected control
+  const updateSliderForSelectedControl = () => {
+    const slider = document.getElementById('controlSlider');
+    const sliderValue = document.getElementById('controlValue');
+    const limits = LIFT_ARM_LIMITS[selectedControl];
+
+    slider.min = limits.min;
+    slider.max = limits.max;
+    slider.value = currentControlPositions[selectedControl].toFixed(2);
+    sliderValue.textContent = slider.value;
+  };
+
+  // Move the selected control (lift or arm) to an absolute position
+  const moveSelectedControlToAbsolute = (position) => {
+    const controlNames = {
+      lift: 'joint_lift',
+      arm: 'wrist_extension',
+    };
+
+    executeFollowJointTrajectory([controlNames[selectedControl]], [position]);
+    currentControlPositions[selectedControl] = position; // Update the current position
+  };
+
+  // Generic function to move the selected control incrementally
+  const moveSelectedControl = (direction) => {
+    const increment = jointIncrement; // Use the same joint increment
+    const newPosition = currentControlPositions[selectedControl] + direction * increment;
+
+    // Ensure the new position is within limits
+    const limits = LIFT_ARM_LIMITS[selectedControl];
+    if (newPosition >= limits.min && newPosition <= limits.max) {
+      moveSelectedControlToAbsolute(newPosition);
+    }
+  };
+
+  // Start continuous movement for the selected control
+  const startMoveSelectedControl = (direction) => {
+    if (!jointInterval) {
+      jointInterval = setInterval(() => moveSelectedControl(direction), 100); // Adjust interval time as needed
+    }
+  };
+
+  // Stop continuous movement for the selected control
+  const stopMoveSelectedControl = () => {
+    clearInterval(jointInterval);
+    jointInterval = null;
+  };
+
+  // Function to initialize the joystick
+  const initializeJoystick = () => {
+    const joystickContainer = document.getElementById('joystickContainer');
+
+    // Destroy any existing joystick instance to prevent duplicates
+    if (joystickInstance) {
+      joystickInstance.destroy();
+      joystickInstance = null;
+    }
+
+    // Create a new joystick instance
+    joystickInstance = nipplejs.create({
+      zone: joystickContainer,
+      mode: 'static', // Static mode keeps the joystick in a fixed position
+      position: { left: '50%', top: '50%' }, // Center the joystick nipple
+      color: 'blue',  // Set the color of the joystick
+    });
+
+    joystickInstance.on('move', (evt, data) => {
+      handleJoystickMove(data);
+    });
+
+    joystickInstance.on('end', () => {
+      // Stop the base when the joystick is released
+      executeFollowJointTrajectory(['translate_mobile_base', 'rotate_mobile_base'], [0, 0]);
+    });
+  };
+
+  // Function to handle joystick movement
+  const handleJoystickMove = (data) => {
+    if (data.direction) {
+      const direction = data.direction.angle; // 'up', 'down', 'left', 'right'
+      const distance = data.distance; // Distance from the center of the joystick
+      const speed = Math.min(distance / 100, 1); // Normalize speed (0 to 1)
+
+      if (direction === 'up') {
+        executeFollowJointTrajectory(['translate_mobile_base'], [speed * 0.1]); // Move forward
+      } else if (direction === 'down') {
+        executeFollowJointTrajectory(['translate_mobile_base'], [-speed * 0.1]); // Move backward
+      } else if (direction === 'left') {
+        executeFollowJointTrajectory(['rotate_mobile_base'], [speed * 0.1]); // Rotate left
+      } else if (direction === 'right') {
+        executeFollowJointTrajectory(['rotate_mobile_base'], [-speed * 0.1]); // Rotate right
+      }
+    }
+  };
+
+  // Function to call the "Move to Home" service
+  const homeTheRobot = () => {
+    const homeService = new ROSLIB.Service({
+      ros: ros,
+      name: '/home_the_robot',
+      serviceType: 'std_srvs/srv/Trigger',
+    });
+
+    const request = new ROSLIB.ServiceRequest({});
+
+    homeService.callService(request, (result) => {
+      if (result.success) {
+        console.log('Robot successfully homed:', result.message);
+      } else {
+        console.error('Failed to home:', result.message);
+      }
+    });
+  };
+
+  // Function to call the "Stow the Robot" service
+  const stowTheRobot = () => {
+    const stowService = new ROSLIB.Service({
+      ros: ros,
+      name: '/stow_the_robot',
+      serviceType: 'std_srvs/srv/Trigger',
+    });
+
+    const request = new ROSLIB.ServiceRequest({});
+
+    stowService.callService(request, (result) => {
+      if (result.success) {
+        console.log('Robot successfully stowed:', result.message);
+      } else {
+        console.error('Failed to stow the robot:', result.message);
+      }
+    });
+  };
+
   // Called when the rosbridge websocket connection is successful
   ros.on('connection', function() {
     document.getElementById('connection').innerHTML = "Connected to Stretch.";
     document.getElementById('camera').style.display = "block";
-    document.getElementById('buttons').style.display = "block";
+    document.getElementById('controls-container').style.display = "flex";
     console.log('Connected to websocket server.');
   
     subscribeToCameraVideo();
     createTrajectoryClient();
+    subscribeToJointStates();
+    initializeJoystick();
   });
 
   // Called when the rosbridge websocket connection is failed
@@ -112,24 +412,255 @@
   ros.on('close', function() {
     document.getElementById('connection').innerHTML = "Disconnected";
     document.getElementById('camera').style.display = "none";
-    document.getElementById('connection').style.display = "none";
+    document.getElementById('controls-container').style.display = "none";
     console.log('Connection to websocket server closed.');
   });
+
+  // Ensure the slider and dropdown are reset correctly on page reload
+  document.addEventListener('DOMContentLoaded', () => {
+    const speedSelect = document.getElementById('speedSelect');
+    const jointSlider = document.getElementById('jointSlider');
+    const jointValue = document.getElementById('jointValue');
+    const jointSelect = document.getElementById('jointSelect');
+    const controlSelect = document.getElementById('controlSelect');
+    const controlSlider = document.getElementById('controlSlider');
+    const controlValue = document.getElementById('controlValue');
+
+    // Reset the dropdown to its default value
+    speedSelect.value = "slow";
+    updateJointSpeed(speedSelect.value);
+
+    // Reset the dropdown to its default value
+    jointSelect.value = 'yaw';
+    selectedJoint = 'yaw';
+    updateSliderForSelectedJoint();
+
+    // Reset the control selection to its default value
+    controlSelect.value = 'lift';
+    selectedControl = 'lift';
+    updateSliderForSelectedControl();
+
+    // Track when the slider is being controlled
+    jointSlider.addEventListener('mousedown', () => {
+      isSliderActive = true;
+    });
+
+    jointSlider.addEventListener('mouseup', () => {
+      isSliderActive = false;
+    });
+
+    jointSlider.addEventListener('mouseleave', () => {
+      isSliderActive = false;
+    });
+
+    // Update the displayed value of the slider when it changes
+    jointSlider.addEventListener('input', function () {
+      jointValue.textContent = this.value;
+      moveSelectedJointToAbsolute(parseFloat(this.value));
+    });
+
+    // Update the slider when the dropdown selection changes
+    jointSelect.addEventListener('change', function () {
+      selectedJoint = this.value;
+      updateSliderForSelectedJoint();
+    });
+
+    // Track when the slider is being controlled
+    controlSlider.addEventListener('mousedown', () => {
+      isSliderActive = true;
+    });
+
+    controlSlider.addEventListener('mouseup', () => {
+      isSliderActive = false;
+    });
+
+    controlSlider.addEventListener('mouseleave', () => {
+      isSliderActive = false;
+    });
+
+    // Update the displayed value of the slider when it changes
+    controlSlider.addEventListener('input', function () {
+      controlValue.textContent = this.value;
+      moveSelectedControlToAbsolute(parseFloat(this.value));
+    });
+
+    // Update the slider when the dropdown selection changes
+    controlSelect.addEventListener('change', function () {
+      selectedControl = this.value;
+      updateSliderForSelectedControl();
+    });
+    initializeJoystick();
+    updateRunstopButton();
+    });
 </script>
 
 <body>
   <h1>Simple roslib Example</h1>
   <p id="connection">Connecting...</p>
   <div id="camera"><img id="cameraImage" /></div>
-  <div id="buttons">
-    <ul>
-        <li><button onClick="openGripper()">Open gripper</button></li>
-        <li><button onClick="closeGripper()">Close gripper</button></li>
-        <li><button onClick="moveBaseForward()">Move base forward</button></li>
-        <li><button onClick="moveBaseBackward()">Move base backward</button></li>
-        <li><button onClick="moveLiftToTop()">Move lift to top</button></li>
-        <li><button onClick="moveLiftToMiddle()">Move lift to middle</button></li>
-    </ul>
+  <div id="controls-container" style="display: flex; align-items: flex-start; gap: 20px;">
+    <!-- Joystick Section -->
+    <div id="joystick-section" style="flex: 1;">
+      <h2>Base Control</h2>
+      <div id="joystickContainer" style="width: 200px; height: 200px; margin: auto; border: 1px solid #ccc; border-radius: 50%; position: relative;"></div>
+    </div>
+
+    <!-- Buttons Section -->
+    <div id="buttons" style="flex: 2;">
+      <ul>
+        <li>
+          <div class="button-row">
+            <button onClick="openGripper()">Open gripper</button>
+            <button onClick="closeGripper()">Close gripper</button>
+          </div>
+        </li>
+        <li>
+          <div class="button-row">
+            <button onClick="moveLiftToTop()">Move lift to top</button>
+            <button onClick="moveLiftToMiddle()">Move lift to middle</button>
+          </div>
+        </li>
+        <li>
+          <div class="button-row">
+            <button onClick="extendArmFully()">Extend Arm Fully</button>
+            <button onClick="retractArmFully()">Retract Arm Fully</button>
+          </div>
+        </li>
+        <li>
+          <h2>Wrist Control</h2>
+          <label for="jointSelect">Select Joint:</label>
+          <select id="jointSelect">
+            <option value="yaw">Yaw</option>
+            <option value="pitch">Pitch</option>
+            <option value="roll">Roll</option>
+          </select>
+        </li>
+        <li>
+          <label for="speedSelect">Wrist Speed:</label>
+          <select id="speedSelect" onchange="updateJointSpeed(this.value)">
+            <option value="slow">Slow</option>
+            <option value="fast">Fast</option>
+          </select>
+        </li>
+        <li>
+          <label for="jointSlider">Joint Position:</label>
+          <input 
+            id="jointSlider" 
+            type="range" 
+            step="0.01" 
+            value="0" />
+          <span id="jointValue">0</span> radians
+        </li>
+        <li>
+          <div class="button-row">
+            <button 
+              onmousedown="startMoveSelectedJoint(-1)" 
+              onmouseup="stopMoveSelectedJoint()" 
+              onmouseleave="stopMoveSelectedJoint()">
+              Move selected joint left
+            </button>
+            <button 
+              onmousedown="startMoveSelectedJoint(1)" 
+              onmouseup="stopMoveSelectedJoint()" 
+              onmouseleave="stopMoveSelectedJoint()">
+              Move selected joint right
+            </button>
+          </div>
+          <li><button onClick="resetWristToDefault()">Reset wrist to default</button></li>
+        </li>
+        <li>
+          <h2>Lift and Arm Control</h2>
+          <label for="controlSelect">Select Control:</label>
+          <select id="controlSelect">
+            <option value="lift">Lift</option>
+            <option value="arm">Extend Arm</option>
+          </select>
+        </li>
+        <li>
+          <label for="controlSlider">Control Position:</label>
+          <input 
+            id="controlSlider" 
+            type="range" 
+            step="0.01" 
+            value="0" />
+          <span id="controlValue">0</span> meters
+        </li>
+        <li>
+          <div class="button-row">
+            <button 
+              onmousedown="startMoveSelectedControl(-1)" 
+              onmouseup="stopMoveSelectedControl()" 
+              onmouseleave="stopMoveSelectedControl()">
+              Move control down
+            </button>
+            <button 
+              onmousedown="startMoveSelectedControl(1)" 
+              onmouseup="stopMoveSelectedControl()" 
+              onmouseleave="stopMoveSelectedControl()">
+              Move control up
+            </button>
+          </div>
+        </li>
+        <li>
+          <div class="button-row">
+            <button onClick="homeTheRobot()">Home Robot</button>
+            <button onClick="stowTheRobot()">Stow Robot</button>
+          </div>
+        </li>
+        <li>
+          <div class="button-row"></div>
+            <button id="runstopButton" onClick="toggleRunstop()">Runstop OFF</button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </body>
+
+<style>
+  ul li { margin-bottom: 20px; list-style: none; }
+  #camera { display: none; }
+  img#cameraImage { transform: rotate(90deg); position: relative; left: -80px; top: 100px; }
+  .button-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 300px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  button {
+    flex: 1;
+    max-width: 120px;
+    height: 40px;
+  }
+  #joystickContainer {
+    width: 200px;
+    height: 200px;
+    margin: auto;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    position: relative;
+  }
+  #runstopButton {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-weight: bold;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    width: 150px;
+    height: 60px;
+    padding: 0;
+    border-radius: 12px;
+    background-color: yellow;
+    color: black;
+    text-align: center;
+    line-height: 60px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    z-index: 1000;
+    white-space: nowrap;
+  }
+</style>
 </html>
