@@ -1,0 +1,86 @@
+ul li {
+margin-bottom: 20px;
+list-style: none;
+}
+
+/* Ensure the camera section has proper spacing */
+#camera {
+text-align: center;
+margin-bottom: 300px; /* Add more space below the camera */
+}
+
+#cameraImage {
+max-width: 100%;
+height: auto;
+display: block;
+margin: 0 auto;
+transform: rotate(90deg);
+position: relative;
+left: -80px;
+top: 100px;
+}
+
+#controls-container {
+display: flex;
+align-items: flex-start;
+gap: 20px;
+flex-wrap: wrap; /* Allow wrapping to prevent overlap */
+}
+
+/* Joystick section styling */
+#joystick-section {
+flex: 1;
+min-width: 300px; /* Ensure a minimum width */
+}
+
+/* Buttons section styling */
+#buttons {
+flex: 2;
+min-width: 400px; /* Ensure a minimum width */
+}
+
+/* Button row styling */
+.button-row {
+display: flex;
+gap: 10px;
+margin-bottom: 20px;
+justify-content: space-between;
+width: 300px;
+align-items: center;
+}
+
+button {
+flex: 1;
+max-width: 120px;
+height: 40px;
+}
+
+#joystickContainer {
+width: 200px;
+height: 200px;
+margin: auto;
+border: 1px solid #ccc;
+border-radius: 50%;
+position: relative;
+}
+
+#runstopButton {
+position: fixed;
+top: 10px;
+right: 10px;
+font-weight: bold;
+font-size: 18px;
+border: none;
+cursor: pointer;
+width: 150px;
+height: 60px;
+padding: 0;
+border-radius: 12px;
+background-color: yellow;
+color: black;
+text-align: center;
+line-height: 60px;
+transition: background-color 0.3s ease, color 0.3s ease;
+z-index: 1000;
+white-space: nowrap;
+}

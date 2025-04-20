@@ -1,0 +1,188 @@
+// Ensure the slider and dropdown are reset correctly on page reload
+document.addEventListener('DOMContentLoaded', () => {
+    const speedSelect = document.getElementById('speedSelect');
+    const jointSlider = document.getElementById('jointSlider');
+    const jointValue = document.getElementById('jointValue');
+    const jointSelect = document.getElementById('jointSelect');
+    const controlSelect = document.getElementById('controlSelect');
+    const controlSlider = document.getElementById('controlSlider');
+    const controlValue = document.getElementById('controlValue');
+
+    // Reset the dropdown to its default value
+    speedSelect.value = "slow";
+    updateJointSpeed(speedSelect.value);
+
+    // Reset the dropdown to its default value
+    jointSelect.value = 'yaw';
+    selectedJoint = 'yaw';
+    updateSliderForSelectedJoint();
+
+    // Reset the control selection to its default value
+    controlSelect.value = 'lift';
+    selectedControl = 'lift';
+    updateSliderForSelectedControl();
+
+    // Track when the slider is being controlled
+    jointSlider.addEventListener('mousedown', () => {
+        isSliderActive = true;
+    });
+
+    jointSlider.addEventListener('mouseup', () => {
+        isSliderActive = false;
+    });
+
+    jointSlider.addEventListener('mouseleave', () => {
+        isSliderActive = false;
+    });
+
+    // Update the displayed value of the slider when it changes
+    jointSlider.addEventListener('input', function () {
+        jointValue.textContent = this.value;
+        moveSelectedJointToAbsolute(parseFloat(this.value));
+    });
+
+    // Update the slider when the dropdown selection changes
+    jointSelect.addEventListener('change', function () {
+        selectedJoint = this.value;
+        updateSliderForSelectedJoint();
+    });
+
+    // Track when the slider is being controlled
+    controlSlider.addEventListener('mousedown', () => {
+        isSliderActive = true;
+    });
+
+    controlSlider.addEventListener('mouseup', () => {
+        isSliderActive = false;
+    });
+
+    controlSlider.addEventListener('mouseleave', () => {
+        isSliderActive = false;
+    });
+
+    // Update the displayed value of the slider when it changes
+    controlSlider.addEventListener('input', function () {
+        controlValue.textContent = this.value;
+        moveSelectedControlToAbsolute(parseFloat(this.value));
+    });
+
+    // Update the slider when the dropdown selection changes
+    controlSelect.addEventListener('change', function () {
+        selectedControl = this.value;
+        updateSliderForSelectedControl();
+    });
+    
+    initializeJoystick();
+    updateRunstopButton();
+});
+
+
+// Function to initialize the joystick
+const initializeJoystick = () => {
+const joystickContainer = document.getElementById('joystickContainer');
+
+// Destroy any existing joystick instance to prevent duplicates
+if (joystickInstance) {
+    joystickInstance.destroy();
+    joystickInstance = null;
+}
+
+// Create a new joystick instance
+joystickInstance = nipplejs.create({
+    zone: joystickContainer,
+    mode: 'static', // Static mode keeps the joystick in a fixed position
+    position: { left: '50%', top: '50%' }, // Center the joystick nipple
+    color: 'blue',  // Set the color of the joystick
+});
+
+joystickInstance.on('move', (evt, data) => {
+    handleJoystickMove(data);
+});
+
+joystickInstance.on('end', () => {
+    // Stop the base when the joystick is released
+    executeFollowJointTrajectory(['translate_mobile_base', 'rotate_mobile_base'], [0, 0]);
+});
+};
+
+// Function to handle joystick movement
+const handleJoystickMove = (data) => {
+    if (data.direction) {
+        const direction = data.direction.angle; // 'up', 'down', 'left', 'right'
+        const distance = data.distance; // Distance from the center of the joystick
+        const speed = Math.min(distance / 100, 1); // Normalize speed (0 to 1)
+
+        if (direction === 'up') {
+        executeFollowJointTrajectory(['translate_mobile_base'], [speed * 0.1]); // Move forward
+        } else if (direction === 'down') {
+        executeFollowJointTrajectory(['translate_mobile_base'], [-speed * 0.1]); // Move backward
+        } else if (direction === 'left') {
+        executeFollowJointTrajectory(['rotate_mobile_base'], [speed * 0.1]); // Rotate left
+        } else if (direction === 'right') {
+        executeFollowJointTrajectory(['rotate_mobile_base'], [-speed * 0.1]); // Rotate right
+        }
+    }
+    };
+    
+// Start continuous movement for the selected joint
+const startMoveSelectedJoint = (direction) => {
+    if (!jointInterval) {
+        jointInterval = setInterval(() => moveSelectedJoint(direction), 100); // Adjust interval time as needed
+    }
+};
+
+// Stop continuous movement for the selected joint
+const stopMoveSelectedJoint = () => {
+    clearInterval(jointInterval);
+    jointInterval = null;
+};
+// Start continuous movement for the selected control
+const startMoveSelectedControl = (direction) => {
+    if (!jointInterval) {
+        jointInterval = setInterval(() => moveSelectedControl(direction), 100); // Adjust interval time as needed
+    }
+};
+
+// Stop continuous movement for the selected control
+const stopMoveSelectedControl = () => {
+    clearInterval(jointInterval);
+    jointInterval = null;
+};
+
+// Update the slider and displayed value based on the selected joint
+const updateSliderForSelectedJoint = () => {
+    const slider = document.getElementById('jointSlider');
+    const sliderValue = document.getElementById('jointValue');
+    const limits = JOINT_LIMITS[selectedJoint];
+
+    slider.min = limits.min;
+    slider.max = limits.max;
+    slider.value = currentJointPositions[selectedJoint].toFixed(2);
+    sliderValue.textContent = slider.value;
+};
+
+  // Update the slider and displayed value based on the selected control
+  const updateSliderForSelectedControl = () => {
+    const slider = document.getElementById('controlSlider');
+    const sliderValue = document.getElementById('controlValue');
+    const limits = LIFT_ARM_LIMITS[selectedControl];
+
+    slider.min = limits.min;
+    slider.max = limits.max;
+    slider.value = currentControlPositions[selectedControl].toFixed(2);
+    sliderValue.textContent = slider.value;
+  };
+
+    // Function to update the toggle button's text and style
+    const updateRunstopButton = () => {
+        const runstopButton = document.getElementById('runstopButton');
+        if (runstopState) {
+          runstopButton.textContent = 'Runstop ON';
+          runstopButton.style.backgroundColor = 'red';
+          runstopButton.style.color = 'white';
+        } else {
+          runstopButton.textContent = 'Runstop OFF';
+          runstopButton.style.backgroundColor = 'yellow';
+          runstopButton.style.color = 'black';
+        }
+      };
