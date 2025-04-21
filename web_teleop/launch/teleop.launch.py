@@ -24,6 +24,14 @@ def generate_launch_description():
         )
     )
 
+
+    # ros2 launch stretch_core d405_basic.launch.py
+    d405_basic_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(stretch_core_dir, "launch", "d405_basic.launch.py")
+        )
+    )
+
     # ros2 launch rosbridge_server rosbridge_websocket_launch.xml
     rosbridge_websocket_launch = IncludeLaunchDescription(
         XMLLaunchDescriptionSource(
@@ -35,5 +43,5 @@ def generate_launch_description():
 
     # launch all 3  launch files
     return LaunchDescription(
-        [stretch_driver_launch, d435i_low_resolution_launch, rosbridge_websocket_launch]
+        [stretch_driver_launch, d435i_low_resolution_launch, d405_basic_launch, rosbridge_websocket_launch]
     )

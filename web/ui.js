@@ -1,3 +1,7 @@
+let isJoystickActive = false; // Tracks if the joystick is active
+let joystickInterval = null;  // Interval for sending continuous commands
+let lastJoystickData = null;  // Stores the last joystick data
+
 // Ensure the slider and dropdown are reset correctly on page reload
 document.addEventListener('DOMContentLoaded', () => {
     const speedSelect = document.getElementById('speedSelect');
@@ -71,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedControl = this.value;
         updateSliderForSelectedControl();
     });
-    
+
     initializeJoystick();
     updateRunstopButton();
 });
@@ -79,30 +83,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to initialize the joystick
 const initializeJoystick = () => {
-const joystickContainer = document.getElementById('joystickContainer');
+    const joystickContainer = document.getElementById('joystickContainer');
 
-// Destroy any existing joystick instance to prevent duplicates
-if (joystickInstance) {
-    joystickInstance.destroy();
-    joystickInstance = null;
-}
+    // Destroy any existing joystick instance to prevent duplicates
+    if (joystickInstance) {
+        joystickInstance.destroy();
+        joystickInstance = null;
+    }
 
-// Create a new joystick instance
-joystickInstance = nipplejs.create({
-    zone: joystickContainer,
-    mode: 'static', // Static mode keeps the joystick in a fixed position
-    position: { left: '50%', top: '50%' }, // Center the joystick nipple
-    color: 'blue',  // Set the color of the joystick
-});
+    // Create a new joystick instance
+    joystickInstance = nipplejs.create({
+        zone: joystickContainer,
+        mode: 'static', // Static mode keeps the joystick in a fixed position
+        position: { left: '50%', top: '50%' }, // Center the joystick nipple
+        color: 'blue',  // Set the color of the joystick
+    });
 
-joystickInstance.on('move', (evt, data) => {
-    handleJoystickMove(data);
-});
+    // Handle joystick movement
+    joystickInstance.on('move', (evt, data) => {
+        lastJoystickData = data; // Store the last joystick data
+        if (!isJoystickActive) {
+            isJoystickActive = true;
+            startJoystickCommandLoop();
+        }
+    });
 
-joystickInstance.on('end', () => {
     // Stop the base when the joystick is released
-    executeFollowJointTrajectory(['translate_mobile_base', 'rotate_mobile_base'], [0, 0]);
-});
+    joystickInstance.on('end', () => {
+        console.log('Joystick released, stopping movement.');
+        isJoystickActive = false;
+        stopJoystickCommandLoop();
+        executeFollowJointTrajectory(['translate_mobile_base', 'rotate_mobile_base'], [0, 0]);
+    });
 };
 
 // Function to handle joystick movement
@@ -110,20 +122,36 @@ const handleJoystickMove = (data) => {
     if (data.direction) {
         const direction = data.direction.angle; // 'up', 'down', 'left', 'right'
         const distance = data.distance; // Distance from the center of the joystick
-        const speed = Math.min(distance / 100, 1); // Normalize speed (0 to 1)
+        const speed = Math.min(distance / 50, 2); // Normalize speed (0 to 1)
 
         if (direction === 'up') {
-        executeFollowJointTrajectory(['translate_mobile_base'], [speed * 0.1]); // Move forward
+            executeFollowJointTrajectory(['translate_mobile_base'], [speed * 0.1]); // Move forward
         } else if (direction === 'down') {
-        executeFollowJointTrajectory(['translate_mobile_base'], [-speed * 0.1]); // Move backward
+            executeFollowJointTrajectory(['translate_mobile_base'], [-speed * 0.1]); // Move backward
         } else if (direction === 'left') {
-        executeFollowJointTrajectory(['rotate_mobile_base'], [speed * 0.1]); // Rotate left
+            executeFollowJointTrajectory(['rotate_mobile_base'], [speed * 0.1]); // Rotate left
         } else if (direction === 'right') {
-        executeFollowJointTrajectory(['rotate_mobile_base'], [-speed * 0.1]); // Rotate right
+            executeFollowJointTrajectory(['rotate_mobile_base'], [-speed * 0.1]); // Rotate right
         }
+        console.log(`Joystick moved: ${direction} with speed: ${speed}`);
     }
-    };
-    
+};
+
+const startJoystickCommandLoop = () => {
+    if (!joystickInterval) {
+        joystickInterval = setInterval(() => {
+            if (lastJoystickData) {
+                handleJoystickMove(lastJoystickData); // Use the last known joystick data
+            }
+        }, 100); // Send commands every 100ms (adjust as needed)
+    }
+};
+
+const stopJoystickCommandLoop = () => {
+    clearInterval(joystickInterval);
+    joystickInterval = null;
+};
+
 // Start continuous movement for the selected joint
 const startMoveSelectedJoint = (direction) => {
     if (!jointInterval) {
@@ -161,8 +189,8 @@ const updateSliderForSelectedJoint = () => {
     sliderValue.textContent = slider.value;
 };
 
-  // Update the slider and displayed value based on the selected control
-  const updateSliderForSelectedControl = () => {
+// Update the slider and displayed value based on the selected control
+const updateSliderForSelectedControl = () => {
     const slider = document.getElementById('controlSlider');
     const sliderValue = document.getElementById('controlValue');
     const limits = LIFT_ARM_LIMITS[selectedControl];
@@ -171,18 +199,18 @@ const updateSliderForSelectedJoint = () => {
     slider.max = limits.max;
     slider.value = currentControlPositions[selectedControl].toFixed(2);
     sliderValue.textContent = slider.value;
-  };
+};
 
-    // Function to update the toggle button's text and style
-    const updateRunstopButton = () => {
-        const runstopButton = document.getElementById('runstopButton');
-        if (runstopState) {
-          runstopButton.textContent = 'Runstop ON';
-          runstopButton.style.backgroundColor = 'red';
-          runstopButton.style.color = 'white';
-        } else {
-          runstopButton.textContent = 'Runstop OFF';
-          runstopButton.style.backgroundColor = 'yellow';
-          runstopButton.style.color = 'black';
-        }
-      };
+// Function to update the toggle button's text and style
+const updateRunstopButton = () => {
+    const runstopButton = document.getElementById('runstopButton');
+    if (runstopState) {
+        runstopButton.textContent = 'Runstop ON';
+        runstopButton.style.backgroundColor = 'red';
+        runstopButton.style.color = 'white';
+    } else {
+        runstopButton.textContent = 'Runstop OFF';
+        runstopButton.style.backgroundColor = 'yellow';
+        runstopButton.style.color = 'black';
+    }
+};

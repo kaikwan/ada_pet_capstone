@@ -84,10 +84,33 @@ const moveSelectedControl = (direction) => {
 
 const moveSelectedJointToAbsolute = (position) => {
     const jointNames = {
-      yaw: 'joint_wrist_yaw',
-      pitch: 'joint_wrist_pitch',
-      roll: 'joint_wrist_roll',
+        yaw: 'joint_wrist_yaw',
+        pitch: 'joint_wrist_pitch',
+        roll: 'joint_wrist_roll',
     };
 
     executeFollowJointTrajectory([jointNames[selectedJoint]], [position]);
-  };
+};
+// Function to toggle the runstop state
+const toggleRunstop = () => {
+    runstopState = !runstopState; // Toggle the state
+
+    const runstopService = new ROSLIB.Service({
+        ros: ros,
+        name: '/runstop',
+        serviceType: 'std_srvs/srv/SetBool',
+    });
+
+    const request = new ROSLIB.ServiceRequest({
+        data: runstopState,
+    });
+
+    runstopService.callService(request, (result) => {
+        if (result.success) {
+            console.log(`Runstop state set to ${runstopState}:`, result.message);
+            updateRunstopButton();
+        } else {
+            console.error('Failed to toggle runstop:', result.message);
+        }
+    });
+};
