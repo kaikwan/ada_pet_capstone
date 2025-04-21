@@ -14,10 +14,11 @@ The repository is organized as follows:
 
 [web_teleop](./web_teleop/): contains a launch file for all necessary robot driver for the web interface
 
-
 ## Installation
 1. [ROBOT and PC] Clone the repository:  
     ```bash
+    mkdir -p ~/ada_pet_capstone/src
+    cd ~/ada_pet_capstone/src
     git clone https://github.com/yourusername/ada_pet_capstone.git
     cd ada_pet_capstone
     ```
@@ -41,8 +42,7 @@ The repository is organized as follows:
 
 2. [PC] Open index.html in a web browser
     ```bash
-    cd src/ada_pet_capstone
-    firefox index.html
+    firefox web/index.html
     ```
 3. [PC] Use the interface to control the robot:
     - Use the joystick for base movement
