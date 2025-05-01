@@ -84,6 +84,10 @@ const subscribeToJointStates = () => {
             }
         }
 
+        // Log the current arm positions
+        // console.log('Current Joint Positions:', currentJointPositions);
+        // console.log('Current Control Positions:', currentControlPositions['arm']);
+
         // Update the wrist slider only if it is not being actively controlled
         if (!isSliderActive) {
             updateSliderForSelectedJoint();

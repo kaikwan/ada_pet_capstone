@@ -10,6 +10,7 @@
   <script src="constants.js" defer></script>
   <script src="roslib-setup.js" defer></script>
   <script src="controls.js" defer></script>
+  <script src="recorder.js" defer></script>
   <script src="ui.js" defer></script>
 </head>
 
@@ -28,7 +29,7 @@
     </div>
 
     <!-- Buttons Section -->
-    <div id="buttons" style="flex: 2;">
+    <div id="buttons" style="flex: 1;">
       <ul>
         <li>
           <div class="button-row">
@@ -112,7 +113,23 @@
         </li>
       </ul>
     </div>
-  </div>
+    <div id="buttons" style="flex: 1;">
+      <ul>
+        <li>
+          <div class="button-row">
+            <button onClick="recordKeyframe()">Record Keyframe</button>
+            <button onClick="resetKeyframes()">Reset Keyframes</button>
+          </div>
+          <div class="button-row">
+            <button onClick="playbackKeyframes()">Playback Keyframes</button>
+          </div>
+          <div class="button-row">
+            <button onClick="loopKeyframes()">Loop Keyframes</button>
+            <button onClick="stopKeyframeLoop()">Stop Loop</button>
+          </div>
+        </li>
+      </ul>
+    </div>
 </body>
 
 </html>
