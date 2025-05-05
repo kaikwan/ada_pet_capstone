@@ -21,7 +21,7 @@ const subscribeToGripperVideo = () => {
     let gripperImage = document.getElementById("gripperImage");
     let topic = new ROSLIB.Topic({
         ros: ros,
-        name: "/gripper_camera/color/image_rect_raw/compressed",
+        name: "/gripper_camera/image_raw/compressed",
         messageType: "sensor_msgs/CompressedImage",
     });
     topic.subscribe((message) => {
@@ -83,7 +83,7 @@ const subscribeToJointStates = () => {
                 }
             }
         }
-        
+
         // Update the wrist slider only if it is not being actively controlled
         if (!isSliderActive) {
             updateSliderForSelectedJoint();
