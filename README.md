@@ -52,9 +52,6 @@ The repository is organized as follows:
     - Home or stow the robot as needed
 
 ## Troubleshooting
-- Realsense not found `[ERROR] [1608156657.316423905]: The requested device with is NOT found. Will Try again.`
-    - Best solution I found so far is to completely power down the robot (unplug robot from power sources, not just a software restart), then starting it back up. This is a known issue with Realsense cameras. 
-    - (kaikwan): I'm looking into ways where I can just restart a Realsense/device management process to prevent a restart, but haven't tried yet.
 - Check browser console for any JavaScript errors
 
 ## Acknowledgments
