@@ -17,8 +17,8 @@ setup(
     zip_safe=True,
     maintainer="kaikwan",
     maintainer_email="kaikwan@cs.washington.edu",
-    description="TODO: Package description",
-    license="TODO: License declaration",
+    description="ROS Package for ada_pet_project web teleoperation and dependencies",
+    license="Apache License 2.0"
     # tests_require=['pytest'],
     entry_points={
         "console_scripts": ["align_to_aruco = web_teleop.align_to_aruco:main"],
