@@ -14,7 +14,7 @@ from rclpy.time import Time
 from tf2_ros import TransformException, Buffer, TransformListener
 from tf_transformations import euler_from_quaternion, quaternion_matrix
 from trajectory_msgs.msg import JointTrajectoryPoint
-
+from action_msgs.msg import GoalStatus
 
 class AlignToAruco(Node):
     def __init__(
@@ -72,8 +72,8 @@ class AlignToAruco(Node):
         _, _, z_rot_base = euler_from_quaternion([x, y, z, w])
         # Calculate final rotation: -phi (cancel rotation needed to align),
         # + z_rot_base (original marker rotation),
-        # + pi/2 (90 degrees to face marker perpendicularly)
-        z_rot_base = -phi + z_rot_base + np.pi / 2
+        # + pi (such that the base and the marker axis are aligned as shown in tutorial)
+        z_rot_base = -phi + z_rot_base + np.pi
 
         return phi, dist, z_rot_base
 
@@ -102,7 +102,7 @@ class AlignToAruco(Node):
             rclpy.spin_until_future_complete(self.node, result_future)
             result = result_future.result()
 
-            if result.status != 4:
+            if result.status != GoalStatus.STATUS_SUCCEEDED:
                 self.node.get_logger().warn(
                     f"Goal for {joint_name} did not succeed: status {result.status}"
                 )
