@@ -12,6 +12,18 @@
   <script src="controls.js" defer></script>
   <script src="recorder.js" defer></script>
   <script src="ui.js" defer></script>
+
+  <script>
+    function playMeow() {
+        fetch('http://localhost:8080/playmeow')
+            .then(response => response.text())
+            .then(data => {
+                console.log(data);
+                alert("Meow sound played!");
+            })
+            .catch(error => console.error("Error:", error));
+    }
+</script>
 </head>
 
 <body>
@@ -115,6 +127,7 @@
     </div>
     <div id="buttons" style="flex: 1;">
       <ul>
+        <h2>Keyframe Control</h2>
         <li>
           <div class="button-row">
             <button onClick="recordKeyframe()">Record Keyframe</button>
@@ -129,7 +142,13 @@
           </div>
         </li>
       </ul>
+      <ul>
+        <h2>Audio Control</h2>
+          <button onClick="playMeow()">Meow</button>
+        </li>
+      </ul>
     </div>
+    
 </body>
 
 </html>
