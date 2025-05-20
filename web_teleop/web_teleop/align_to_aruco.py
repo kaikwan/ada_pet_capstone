@@ -16,10 +16,9 @@ from tf_transformations import euler_from_quaternion, quaternion_matrix
 from trajectory_msgs.msg import JointTrajectoryPoint
 from action_msgs.msg import GoalStatus
 
+
 class AlignToAruco(Node):
-    def __init__(
-        self, node, trans_base: TransformStamped, offset=0.75
-    ):
+    def __init__(self, node, trans_base: TransformStamped, offset=0.75):
         self.trans_base = trans_base
         self.offset = offset  # Desired y-offset of base from marker
         self.node = node
@@ -154,9 +153,7 @@ def main():
         rclpy.spin_once(node, timeout_sec=0.1)
 
     # Create aligner and run
-    align = AlignToAruco(
-        node=node, trans_base=trans_base, offset=0.2
-    )
+    align = AlignToAruco(node=node, trans_base=trans_base, offset=0.2)
     align.align_to_marker()
 
     rclpy.shutdown()

@@ -2,6 +2,7 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
+from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -34,7 +35,19 @@ def generate_launch_description():
         )
     )
 
-    # launch all 3  launch files
+    # ros2 run web_teleop play_sound
+    play_sound_node = Node(
+        package="web_teleop",
+        executable="play_sound",
+        output="screen",
+    )
+
+    # launch all 3 launch files
     return LaunchDescription(
-        [stretch_driver_launch, rosbridge_websocket_launch, multi_cam_launch]
+        [
+            stretch_driver_launch,
+            rosbridge_websocket_launch,
+            multi_cam_launch,
+            play_sound_node,
+        ]
     )
