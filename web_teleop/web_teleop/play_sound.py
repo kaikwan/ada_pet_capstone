@@ -13,18 +13,15 @@ class PlaySoundSubscriber(Node):
         )
         self.subscription  # prevent unused variable warning
         self.dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
+        self.respeaker = Tuning(self.dev)
 
     def listener_callback(self, msg):
         try:
             if self.dev:
-                respeaker = Tuning(self.dev)
-                print("* playing audio")
                 if msg.data == "meow":
-                    print("* playing meow")
                     play_audio(
                         "/home/hello-robot/ada_pet_capstone/src/ada_pet_capstone/web/audio/meow.wav"
                     )
-                print("* done")
         except usb.core.USBError:
             print("Respeaker not on USB bus")
 

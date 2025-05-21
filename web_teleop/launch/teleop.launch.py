@@ -42,7 +42,7 @@ def generate_launch_description():
         output="screen",
     )
 
-    # launch all 3 launch files
+    # launch all 3 launch files + play_sound node
     return LaunchDescription(
         [
             stretch_driver_launch,

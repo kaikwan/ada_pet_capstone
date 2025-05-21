@@ -1,4 +1,4 @@
-function playMeow() {
+function playSound(sound) {
     var playSound = new ROSLIB.Topic({
     ros : ros,
     name : '/play_sound',
@@ -6,7 +6,7 @@ function playMeow() {
     });
 
     var String = new ROSLIB.Message({
-    data : "meow"
+        data : sound
     });
     playSound.publish(String);
 }

@@ -2,10 +2,8 @@
 from __future__ import print_function
 import pyaudio
 import wave
-import numpy as np
 import usb.core
 import struct
-import time
 import os
 import sys
 from contextlib import contextmanager
@@ -15,8 +13,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Record and playback audio via Respeaker ")
 args = parser.parse_args()
 
-
-import stretch_body.hello_utils as hu
+import stretch_body.hello_utils as hu  # noqa F401
 
 hu.print_stretch_re_use()
 

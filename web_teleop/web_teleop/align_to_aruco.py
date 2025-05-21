@@ -118,6 +118,7 @@ def main():
 
     tf_buffer = Buffer()
     tf_listener = TransformListener(tf_buffer, node)
+    tf_listener  # prevent unused variable warning
 
     timeout_sec = 10.0
     start_time = time.time()
