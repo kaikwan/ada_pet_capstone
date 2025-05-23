@@ -1,5 +1,5 @@
 let ros = new ROSLIB.Ros({
-    url: 'ws://uw-481-hello-robot-rosbridge-server.loca.lt',
+    url: 'wss://uw-481-hello-robot-rosbridge-server.loca.lt',
 });
 
 let trajectoryClient = null;
