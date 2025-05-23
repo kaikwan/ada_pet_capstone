@@ -1,5 +1,5 @@
 let ros = new ROSLIB.Ros({
-    url: 'wss://typing-dimensions-timeline-yu.trycloudflare.com',
+    url: 'wss://hormone-choir-ebooks-idaho.trycloudflare.com',
 });
 
 let trajectoryClient = null;
