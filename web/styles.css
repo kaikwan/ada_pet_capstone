@@ -5,30 +5,30 @@ ul li {
 
 /* Ensure the camera section has proper spacing */
 #camera {
-    margin-bottom: 200px;
-    /* Add more space below the camera */
+    position: relative;
+    height: 500px;
+    width: 50%;
 }
 
 #cameraImage {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
+    width: 480px;
+    height: 360px;
     transform: rotate(90deg);
-    position: relative;
-    left: -500px;
-    top: 50px;
+    transform-origin: top left;
+    position: absolute;
+    top: 0;
+    left: 350px;
+    margin-left: 20px;
 }
 
+
 #gripperImage {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-    /* transform: rotate(90deg); */
-    position: relative;
-    left: -80px;
-    top: 300px;
+    width: 420px;
+    height: 300px;
+    position: absolute;
+    top: 0px;
+    left: 370px;
+    padding-left: 20px;
 }
 
 #controls-container {
