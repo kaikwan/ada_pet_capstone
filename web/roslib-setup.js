@@ -1,5 +1,5 @@
 let ros = new ROSLIB.Ros({
-    url: 'wss://hormone-choir-ebooks-idaho.trycloudflare.com',
+    url: 'wss://hellorobotuw.live',
 });
 
 let trajectoryClient = null;
