@@ -91,12 +91,16 @@ const initializeJoystick = () => {
         joystickInstance = null;
     }
 
-    // Create a new joystick instance
+    // Create a new joystick instance with improved responsiveness
     joystickInstance = nipplejs.create({
         zone: joystickContainer,
         mode: 'static', // Static mode keeps the joystick in a fixed position
         position: { left: '50%', top: '50%' }, // Center the joystick nipple
         color: 'blue',  // Set the color of the joystick
+        size: Math.min(joystickContainer.clientWidth, joystickContainer.clientHeight) * 0.8, // Responsive size
+        dynamicPage: true, // Better handle page resize events
+        lockX: false, // Allow X-axis movement
+        lockY: false  // Allow Y-axis movement
     });
 
     // Handle joystick movement
@@ -214,3 +218,13 @@ const updateRunstopButton = () => {
         runstopButton.style.color = 'black';
     }
 };
+
+// Handle window resize events to reinitialize the joystick
+window.addEventListener('resize', () => {
+    // Debounce the resize event to prevent too many reinitializations
+    clearTimeout(window.resizeTimer);
+    window.resizeTimer = setTimeout(() => {
+        console.log('Window resized, reinitializing joystick');
+        initializeJoystick();
+    }, 250);
+});

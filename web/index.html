@@ -1,3 +1,4 @@
+<!-- filepath: /Users/henri/ada_pet_capstone/web/index.html -->
 <!DOCTYPE html>
 <html>
 
@@ -6,139 +7,160 @@
   <title>Assistive Pet Robot</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/gh/hello-vinitha/roslibjs@ros2actionclient/build/roslib.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.2/dist/nipplejs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
   <script src="constants.js" defer></script>
   <script src="roslib-setup.js" defer></script>
   <script src="controls.js" defer></script>
   <script src="recorder.js" defer></script>
   <script src="ui.js" defer></script>
   <script src="audio.js" defer></script>
-
 </head>
 
 <body>
   <h1>Assistive Pet Robot</h1>
   <p id="connection">Connecting...</p>
-  <div id="camera">
-    <img id="gripperImage" />
-    <img id="cameraImage" />
-  </div>
-  <div id="controls-container" style="display: flex; align-items: flex-start; gap: 20px;">
-    <!-- Joystick Section -->
-    <div id="joystick-section" style="flex: 1;">
-      <h2>Base Control</h2>
-      <div id="joystickContainer"></div>
-    </div>
-
-    <!-- Buttons Section -->
-    <div id="buttons" style="flex: 1;">
-      <ul>
-        <li>
-          <div class="button-row">
-            <button onClick="openGripper()">Open gripper</button>
-            <button onClick="closeGripper()">Close gripper</button>
-          </div>
-        </li>
-        <li>
-          <div class="button-row">
-            <button onClick="moveLiftToTop()">Move lift to top</button>
-            <button onClick="moveLiftToMiddle()">Move lift to middle</button>
-          </div>
-        </li>
-        <li>
-          <div class="button-row">
-            <button onClick="extendArmFully()">Extend Arm Fully</button>
-            <button onClick="retractArmFully()">Retract Arm Fully</button>
-          </div>
-        </li>
-        <li>
-          <h2>Wrist Control</h2>
-          <label for="jointSelect">Select Joint:</label>
-          <select id="jointSelect">
-            <option value="yaw">Yaw</option>
-            <option value="pitch">Pitch</option>
-            <option value="roll">Roll</option>
-          </select>
-        </li>
-        <li>
-          <label for="speedSelect">Wrist Speed:</label>
-          <select id="speedSelect" onchange="updateJointSpeed(this.value)">
-            <option value="slow">Slow</option>
-            <option value="fast">Fast</option>
-          </select>
-        </li>
-        <li>
-          <label for="jointSlider">Joint Position:</label>
-          <input id="jointSlider" type="range" step="0.01" value="0" />
-          <span id="jointValue">0</span> radians
-        </li>
-        <li>
-          <div class="button-row">
-            <button onmousedown="startMoveSelectedJoint(-1)" onmouseup="stopMoveSelectedJoint()"
-              onmouseleave="stopMoveSelectedJoint()">Move selected joint left</button>
-            <button onmousedown="startMoveSelectedJoint(1)" onmouseup="stopMoveSelectedJoint()"
-              onmouseleave="stopMoveSelectedJoint()">Move selected joint right</button>
-          </div>
-        <li><button onClick="resetWristToDefault()">Reset wrist to default</button></li>
-        </li>
-        <li>
-          <h2>Lift and Arm Control</h2>
-          <label for="controlSelect">Select Control:</label>
-          <select id="controlSelect">
-            <option value="lift">Lift</option>
-            <option value="arm">Extend Arm</option>
-          </select>
-        </li>
-        <li>
-          <label for="controlSlider">Control Position:</label>
-          <input id="controlSlider" type="range" step="0.01" value="0" />
-          <span id="controlValue">0</span> meters
-        </li>
-        <li>
-          <div class="button-row">
-            <button onmousedown="startMoveSelectedControl(-1)" onmouseup="stopMoveSelectedControl()"
-              onmouseleave="stopMoveSelectedControl()">Move control down</button>
-            <button onmousedown="startMoveSelectedControl(1)" onmouseup="stopMoveSelectedControl()"
-              onmouseleave="stopMoveSelectedControl()">Move control up</button>
-          </div>
-        </li>
-        <li>
-          <div class="button-row">
-            <button onClick="homeTheRobot()">Home Robot</button>
-            <button onClick="stowTheRobot()">Stow Robot</button>
-          </div>
-        </li>
-        <li>
-          <div class="button-row">
-            <button id="runstopButton" onClick="toggleRunstop()">Runstop OFF</button>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div id="buttons" style="flex: 1;">
-      <ul>
-        <h2>Keyframe Control</h2>
-        <li>
-          <div class="button-row">
-            <button onClick="recordKeyframe()">Record Keyframe</button>
-            <button onClick="resetKeyframes()">Reset Keyframes</button>
-          </div>
-          <div class="button-row">
-            <button onClick="playbackKeyframes()">Playback Keyframes</button>
-          </div>
-          <div class="button-row">
-            <button onClick="loopKeyframes()">Loop Keyframes</button>
-            <button onClick="stopKeyframeLoop()">Stop Loop</button>
-          </div>
-        </li>
-      </ul>
-      <ul>
-        <h2>Audio Control</h2>
-          <button onClick="playSound('meow')">Meow</button>
-        </li>
-      </ul>
+  
+  <!-- Main container for camera and controls in a row -->
+  <div class="main-container">
+    <!-- Camera Section -->
+    <div id="camera">
+      <div class="camera-view-container">
+        <div class="camera-wrapper">
+          <img id="cameraImage" alt="Camera View" />
+        </div>
+        <img id="gripperImage" alt="Gripper View" />
+      </div>
     </div>
     
+    <!-- Controls Section -->
+    <div class="controls-outer">
+      <div id="controls-container">
+        <!-- First Row: Base Control, Keyframe and Audio Controls -->
+        <div class="controls-row">
+          <!-- Base Control -->
+          <div class="control-column">
+            <!-- Joystick Section -->
+            <div id="joystick-section">
+              <h2>Base Control</h2>
+              <div id="joystickContainer"></div>
+            </div>
+            
+            <!-- Other Controls Section -->
+            <div id="buttons">
+            </div>
+          </div>
+
+          <!-- Keyframe Control Section -->
+          <div class="control-column">
+            <h2>Keyframe Control</h2>
+            <ul>
+              <li>
+                <div class="button-row">
+                  <button onClick="recordKeyframe()">Record Keyframe</button>
+                  <button onClick="resetKeyframes()">Reset Keyframes</button>
+                </div>
+                <div class="button-row">
+                  <button onClick="playbackKeyframes()">Playback Keyframes</button>
+                </div>
+                <div class="button-row">
+                  <button onClick="loopKeyframes()">Loop Keyframes</button>
+                  <button onClick="stopKeyframeLoop()">Stop Loop</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Audio Control Section -->
+          <div class="control-column">
+            <h2>Audio Control</h2>
+            <ul>
+              <li>
+                <button onClick="playSound('meow')">Meow</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Second Row: Wrist Control and Lift/Arm Control -->
+        <div class="controls-row">
+          <!-- Wrist Control Section -->
+          <div class="control-column">
+            <h2>Wrist Control</h2>
+            <ul>
+              <li>
+                <label for="jointSelect">Select Joint:</label>
+                <select id="jointSelect">
+                  <option value="yaw">Yaw</option>
+                  <option value="pitch">Pitch</option>
+                  <option value="roll">Roll</option>
+                </select>
+              </li>
+              <li>
+                <label for="speedSelect">Wrist Speed:</label>
+                <select id="speedSelect" onchange="updateJointSpeed(this.value)">
+                  <option value="slow">Slow</option>
+                  <option value="fast">Fast</option>
+                </select>
+              </li>
+              <li>
+                <label for="jointSlider">Joint Position:</label>
+                <input id="jointSlider" type="range" step="0.01" value="0" />
+                <span id="jointValue">0</span> radians
+              </li>
+              <li>
+                <div class="button-row">
+                  <button onmousedown="startMoveSelectedJoint(-1)" onmouseup="stopMoveSelectedJoint()"
+                    onmouseleave="stopMoveSelectedJoint()">Move selected joint left</button>
+                  <button onmousedown="startMoveSelectedJoint(1)" onmouseup="stopMoveSelectedJoint()"
+                    onmouseleave="stopMoveSelectedJoint()">Move selected joint right</button>
+                </div>
+              </li>
+              <li><button onClick="resetWristToDefault()">Reset wrist to default</button></li>
+            </ul>
+          </div>
+
+          <!-- Lift and Arm Control Section -->
+          <div class="control-column">
+            <h2>Lift and Arm Control</h2>
+            <ul>
+              <li>
+                <label for="controlSelect">Select Control:</label>
+                <select id="controlSelect">
+                  <option value="lift">Lift</option>
+                  <option value="arm">Extend Arm</option>
+                </select>
+              </li>
+              <li>
+                <label for="controlSlider">Control Position:</label>
+                <input id="controlSlider" type="range" step="0.01" value="0" />
+                <span id="controlValue">0</span> meters
+              </li>
+              <li>
+                <div class="button-row">
+                  <button onmousedown="startMoveSelectedControl(-1)" onmouseup="stopMoveSelectedControl()"
+                    onmouseleave="stopMoveSelectedControl()">Move control down</button>
+                  <button onmousedown="startMoveSelectedControl(1)" onmouseup="stopMoveSelectedControl()"
+                    onmouseleave="stopMoveSelectedControl()">Move control up</button>
+                </div>
+              </li>
+              <li>
+                <div class="button-row">
+                  <button onClick="homeTheRobot()">Home Robot</button>
+                  <button onClick="stowTheRobot()">Stow Robot</button>
+                </div>
+              </li>
+              <li>
+                <div class="button-row">
+                  <button id="runstopButton" onClick="toggleRunstop()">Runstop OFF</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 </body>
 
 </html>
