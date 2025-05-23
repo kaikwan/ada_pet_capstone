@@ -7,7 +7,6 @@ log/
 .colcon/
 
 # ROS 2 workspace config files
-*.yaml
 *.log
 
 # Python bytecode
