@@ -1,5 +1,5 @@
 let ros = new ROSLIB.Ros({
-    url: 'wss://uw-481-hello-robot-rosbridge-server.loca.lt',
+    url: 'wss://typing-dimensions-timeline-yu.trycloudflare.com',
 });
 
 let trajectoryClient = null;
