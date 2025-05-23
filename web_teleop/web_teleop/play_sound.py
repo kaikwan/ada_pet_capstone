@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 import usb.core
@@ -28,14 +30,10 @@ class PlaySoundSubscriber(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
     play_sound_subscriber = PlaySoundSubscriber()
 
     rclpy.spin(play_sound_subscriber)
 
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     play_sound_subscriber.destroy_node()
     rclpy.shutdown()
 
