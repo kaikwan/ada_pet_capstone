@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/gh/hello-vinitha/roslibjs@ros2actionclient/build/roslib.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eventemitter2@0.4.14/lib/eventemitter2.js"></script>
+    <script src="./ros2d.min.js"></script>
     <script src="constants.js" defer></script>
     <script src="roslib-setup.js" defer></script>
     <script src="controls.js" defer></script>
@@ -21,14 +24,30 @@
 
     <!-- Main container for camera and controls in a row -->
     <div class="main-container">
-      <!-- Camera Section -->
-      <div id="camera">
-        <div class="camera-view-container">
-          <div class="camera-wrapper">
-            <img id="cameraImage" alt="Camera View" />
+      <!-- Tabs for switching between camera and map views -->
+      <div class="tab-container">
+        <div class="tabs">
+          <button class="tab-button" data-tab="camera">Camera View</button>
+          <button class="tab-button active" data-tab="mapTab">Map View</button>
+        </div>
+
+        <!-- Tab content containers -->
+        <div class="tab-content">
+          <!-- Camera Section (shown by default) -->
+          <div id="camera" class="tab-pane">
+            <div class="camera-view-container">
+              <div class="camera-wrapper">
+                <img id="cameraImage" alt="Camera View" />
+              </div>
+              <div class="camera-wrapper gripper">
+                <img id="gripperImage" alt="Gripper View" />
+              </div>
+            </div>
           </div>
-          <div class="camera-wrapper gripper">
-            <img id="gripperImage" alt="Gripper View" />
+
+          <!-- Map Section (initially hidden) -->
+          <div id="mapTab" class="tab-pane active">
+            <div id="map" onload="init_map()"></div>
           </div>
         </div>
       </div>
