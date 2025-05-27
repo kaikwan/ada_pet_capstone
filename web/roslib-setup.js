@@ -1,5 +1,6 @@
 let ros = new ROSLIB.Ros({
-  url: "wss://hellorobotuw.live",
+  url: "ws://localhost:9090",
+  // url: "wss://hellorobotuw.live",
 });
 
 let trajectoryClient = null;
@@ -128,7 +129,7 @@ ros.on("error", (error) => {
 
 ros.on("close", () => {
   document.getElementById("connection").innerHTML = "Disconnected";
-  document.getElementById("camera").style.display = "none";
-  document.getElementById("controls-container").style.display = "none";
+//   document.getElementById("camera").style.display = "none";
+//   document.getElementById("controls-container").style.display = "none";
   console.log("Connection to websocket server closed.");
 });

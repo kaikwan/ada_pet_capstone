@@ -107,7 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
       height : 500
   });
 
-  // Log cursor coordinates on map click
+  // Log cursor coordinates on map click and draw direction vector
+  let clickPoints = [];
   const mapDiv = document.getElementById('map');
   mapDiv.addEventListener('click', function(event) {
     // Get bounding rect for offset
@@ -117,7 +118,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Convert to map coordinates
     const mapCoords = viewer.scene.globalToRos(x, y);
-    console.log(`Map clicked at: x=${mapCoords.x.toFixed(2)}, y=${mapCoords.y.toFixed(2)}`);
+
+    clickPoints.push({ x: mapCoords.x, y: -mapCoords.y }); // WARN: Not sure why y is negative here
+
+    // If two points are clicked, draw the vector
+    if (clickPoints.length === 2) {
+      const [start, end] = clickPoints;
+      if (window.vectorShape) {
+        viewer.scene.removeChild(window.vectorShape);
+      }
+
+      // Display the vector direction
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      
+      // Create an arrow shape to represent the normalized direction vector
+      const arrow = new createjs.Shape();
+      const normLength = 1.0;
+      const angle = Math.atan2(dy, dx);
+      const nx = start.x + normLength * Math.cos(angle);
+      const ny = start.y + normLength * Math.sin(angle);
+
+      // Draw the main normalized line with a thin stroke
+      arrow.graphics
+        .setStrokeStyle(0.1)
+        .beginStroke("green")
+        .moveTo(start.x, start.y)
+        .lineTo(nx, ny)
+        .endStroke();
+
+      // Draw arrowhead with a thicker stroke for visibility
+      const arrowSize = 0.5;
+      arrow.graphics
+        .setStrokeStyle(0.1)
+        .beginStroke("green")
+        .moveTo(nx, ny)
+        .lineTo(
+          nx - arrowSize * Math.cos(angle - Math.PI / 6),
+          ny - arrowSize * Math.sin(angle - Math.PI / 6)
+        )
+        .moveTo(nx, ny)
+        .lineTo(
+          (nx - arrowSize * Math.cos(angle + Math.PI / 6)),
+          (ny - arrowSize * Math.sin(angle + Math.PI / 6))
+        )
+        .endStroke();
+
+      viewer.scene.addChild(arrow);
+      window.vectorShape = arrow; // Store for later removal
+
+      // Reset for next vector
+      clickPoints = [];
+    }
   });
 
   // Setup the map client.

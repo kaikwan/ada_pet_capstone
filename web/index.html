@@ -27,14 +27,14 @@
       <!-- Tabs for switching between camera and map views -->
       <div class="tab-container">
         <div class="tabs">
-          <button class="tab-button" data-tab="camera">Camera View</button>
-          <button class="tab-button active" data-tab="mapTab">Map View</button>
+          <button class="tab-button active" data-tab="camera">Camera View</button>
+          <button class="tab-button" data-tab="mapTab">Map View</button>
         </div>
 
         <!-- Tab content containers -->
         <div class="tab-content">
           <!-- Camera Section (shown by default) -->
-          <div id="camera" class="tab-pane">
+          <div id="camera" class="tab-pane active">
             <div class="camera-view-container">
               <div class="camera-wrapper">
                 <img id="cameraImage" alt="Camera View" />
@@ -46,7 +46,7 @@
           </div>
 
           <!-- Map Section (initially hidden) -->
-          <div id="mapTab" class="tab-pane active">
+          <div id="mapTab" class="tab-pane">
             <div id="map" onload="init_map()"></div>
           </div>
         </div>
