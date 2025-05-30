@@ -166,7 +166,7 @@ button {
 }
 
 #runstopButton {
-  position: fixed;
+  position: absolute;
   top: 10px;
   right: 10px;
   font-weight: bold;
@@ -237,8 +237,8 @@ body {
 
 /* Tab container and tab styles */
 .tab-container {
-  width: 100%;
-  max-width: 950px;
+  width: 50%;
+  max-width: 50%px;
   margin-bottom: 20px;
 }
 
@@ -246,6 +246,7 @@ body {
   display: flex;
   border-bottom: 1px solid #ccc;
   margin-bottom: 10px;
+  gap: 10px;
 }
 
 .tab-button {
@@ -253,8 +254,7 @@ body {
   border: 1px solid #ccc;
   border-bottom: none;
   padding: 10px 20px;
-  cursor: pointer;
-  margin-right: 5px;
+  margin-right: 0px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   max-width: none;
@@ -269,9 +269,13 @@ body {
 }
 
 .tab-content {
-  padding: 10px;
+  display: flex;
+  padding: 30px;
   border: 1px solid #ccc;
   border-top: none;
+  justify-content: center;
+  align-items: center;
+  margin-top: -10px;
 }
 
 .tab-pane {
