@@ -16,6 +16,7 @@
     <script src="recorder.js" defer></script>
     <script src="ui.js" defer></script>
     <script src="audio.js" defer></script>
+    <script src="nav.js" defer></script>
   </head>
 
   <body>
@@ -23,7 +24,7 @@
     <p id="connection">Connecting...</p>
 
     <!-- Main container for camera and controls in a row -->
-    <div class="main-container">
+    <div id="all-containers" class="main-container">
       <!-- Tabs for switching between camera and map views -->
       <div class="tab-container">
         <div class="tabs">
@@ -97,6 +98,12 @@
               <ul>
                 <li>
                   <button onClick="playSound('meow')">Meow</button>
+                </li>
+                <li>
+                  <button onClick="navToFixedPoint()">Nav To Wand</button>
+                </li>
+                <li>
+                  <button onClick="startArucoTagSearch()">Align</button>
                 </li>
               </ul>
             </div>

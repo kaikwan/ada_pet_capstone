@@ -10,7 +10,7 @@ def generate_launch_description():
     )
 
     detect_aruco_markers = Node(
-        package="stretch_core",
+        package="web_teleop",
         executable="detect_aruco_markers",
         output="screen",
         parameters=[dict_file_path],

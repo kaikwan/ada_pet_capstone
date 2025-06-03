@@ -166,7 +166,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
       viewer.scene.addChild(arrow);
       window.vectorShape = arrow; // Store for later removal
-
+      
+      // ROS action to move the robot to goal pose
+      // Calculate the angle and quaternion for robot orientation
+      let angle_ = Math.atan2(end.y - start.y, end.x - start.x);
+      // Convert Euler angle to quaternion
+      const qz = Math.sin(angle_ / 2);
+      const qw = Math.cos(angle_ / 2);
+      
+      const goalPose = {
+        position: {
+          x: end.x,
+          y: -end.y, // Convert back to original y coordinate
+          z: 0
+        },
+        orientation: {
+          x: 0,
+          y: 0,
+          z: qz,
+          w: qw
+        }
+      };
+      executeNavigateToPose(goalPose);
+      console.log(`Moving to goal pose: ${JSON.stringify(goalPose)}`);
       // Reset for next vector
       clickPoints = [];
     }
