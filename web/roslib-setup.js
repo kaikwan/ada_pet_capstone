@@ -3,6 +3,13 @@ let ros = new ROSLIB.Ros({
 });
 
 let trajectoryClient = null;
+let navigationClient = null;
+
+const startTagSearch = new ROSLIB.Service({
+  ros: ros,
+  name: '/start_tag_search',
+  serviceType: 'std_srvs/Trigger',
+});
 
 // Create subscription to the camera video topic
 const subscribeToCameraVideo = () => {
@@ -21,7 +28,7 @@ const subscribeToGripperVideo = () => {
   let gripperImage = document.getElementById("gripperImage");
   let topic = new ROSLIB.Topic({
     ros: ros,
-    name: "/gripper_camera/color/image_rect_raw/compressed",
+    name: "/gripper_camera/image_raw/compressed",
     messageType: "sensor_msgs/CompressedImage",
   });
   topic.subscribe((message) => {
@@ -35,6 +42,15 @@ const createTrajectoryClient = () => {
     ros: ros,
     name: "/stretch_controller/follow_joint_trajectory",
     actionType: "control_msgs/action/FollowJointTrajectory",
+  });
+};
+
+// Create a handle to the NavigateToPose action
+const createNavigateToPoseClient = () => {
+  navigationClient = new ROSLIB.ActionHandle({
+    ros: ros,
+    name: "/navigate_to_pose",
+    actionType: "nav2_msgs/action/NavigateToPose",
   });
 };
 
@@ -55,6 +71,32 @@ const executeFollowJointTrajectory = (jointNames, jointPositions) => {
     },
   });
   trajectoryClient.createClient(goal);
+};
+
+
+const executeNavigateToPose = (pose) => {
+  let goal = new ROSLIB.ActionGoal({
+    pose: {
+      header: {
+        frame_id: "map"
+      },
+      pose: {
+        position: {
+          x: -0.65,
+          y: 2.3,
+          z: 0.0
+        },
+        orientation: {
+          x: 0.0,
+          y: 0.0,
+          z: -0.796,
+          w: 0.705
+        }
+      }
+    },
+    behavior_tree: ""
+  });
+  navigationClient.createClient(goal);
 };
 
 // Subscribe to the joint states topic to get the current positions of yaw, pitch, roll, lift, and arm
@@ -119,6 +161,7 @@ ros.on("connection", function () {
   subscribeToJointStates();
   initializeJoystick();
   createTrajectoryClient();
+  createNavigateToPoseClient();
 });
 ros.on("error", (error) => {
   document.getElementById("connection").innerHTML =
@@ -128,7 +171,7 @@ ros.on("error", (error) => {
 
 ros.on("close", () => {
   document.getElementById("connection").innerHTML = "Disconnected";
-  document.getElementById("camera").style.display = "none";
-  document.getElementById("controls-container").style.display = "none";
+  document.getElementById("all-containers").style.display = "none";
+  // document.getElementById("controls-container").style.display = "none";
   console.log("Connection to websocket server closed.");
 });

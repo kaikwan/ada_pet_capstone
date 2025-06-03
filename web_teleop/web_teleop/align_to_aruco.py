@@ -130,12 +130,12 @@ def main():
         missing = []
 
         try:
-            if tf_buffer.can_transform("base_link", "base_right", Time()):
+            if tf_buffer.can_transform("base_link", "cat!", Time()):
                 trans_base = tf_buffer.lookup_transform(
-                    "base_link", "base_right", Time()
+                    "base_link", "cat!", Time()
                 )
             else:
-                missing.append("base_link → base_right")
+                missing.append("base_link → cat!")
         except TransformException as ex:
             node.get_logger().warn(f"Error during transform lookup: {ex}")
             missing.append("exception")
@@ -154,7 +154,7 @@ def main():
         rclpy.spin_once(node, timeout_sec=0.1)
 
     # Create aligner and run
-    align = AlignToAruco(node=node, trans_base=trans_base, offset=0.2)
+    align = AlignToAruco(node=node, trans_base=trans_base, offset=0.5)
     align.align_to_marker()
 
     rclpy.shutdown()

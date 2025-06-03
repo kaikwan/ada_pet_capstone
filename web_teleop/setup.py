@@ -22,6 +22,8 @@ setup(
     # tests_require=['pytest'],
     entry_points={
         "console_scripts": [
+            "detect_aruco_markers = web_teleop.detect_aruco_markers:main",
+            "aruco_tag_locator = web_teleop.aruco_tag_locator:main",
             "align_to_aruco = web_teleop.align_to_aruco:main",
             "play_sound = web_teleop.play_sound:main",
         ],
