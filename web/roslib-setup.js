@@ -171,7 +171,6 @@ ros.on("error", (error) => {
 
 ros.on("close", () => {
   document.getElementById("connection").innerHTML = "Disconnected";
-  document.getElementById("all-containers").style.display = "none";
-  // document.getElementById("controls-container").style.display = "none";
+  // document.getElementById("all-containers").style.display = "none";
   console.log("Connection to websocket server closed.");
 });

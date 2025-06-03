@@ -285,3 +285,12 @@ body {
 .tab-pane.active {
   display: block !important;
 }
+
+#map {
+  width: 500px !important;
+  height: 400px !important;
+  overflow: hidden;
+  position: relative;
+}
+
+
