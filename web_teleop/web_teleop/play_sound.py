@@ -5,7 +5,9 @@ from rclpy.node import Node
 import usb.core
 from .sound_utils import Tuning, play_audio
 from std_msgs.msg import String
+import os
 
+audios = ["meow", "food", "squeak", "chirp"]
 
 class PlaySoundSubscriber(Node):
     def __init__(self):
@@ -20,10 +22,13 @@ class PlaySoundSubscriber(Node):
     def listener_callback(self, msg):
         try:
             if self.dev:
-                if msg.data == "meow":
-                    play_audio(
-                        "/home/hello-robot/ada_pet_capstone/src/ada_pet_capstone/web/audio/meow.wav"
+                if msg.data in audios:
+                    audio_path = os.path.join(
+                        "/home/hello-robot/ada_pet_capstone/src/ada_pet_capstone/web/audio/",
+                        msg.data + ".wav"
                     )
+
+                    play_audio(audio_path)
         except usb.core.USBError:
             print("Respeaker not on USB bus")
 
