@@ -37,12 +37,10 @@ class LocateArUcoTag(hm.HelloNode):
 
         self.rot_vel = 0.5  # radians per sec
 
-        # ✅ Setup transform listener
         self.static_broadcaster = tf2_ros.StaticTransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
-        # ✅ Add trigger service
         self.service = self.create_service(Trigger, 'start_tag_search', self.handle_find_tag)
 
     def joint_states_callback(self, msg):
@@ -105,7 +103,7 @@ class LocateArUcoTag(hm.HelloNode):
                     now = Time()
                     transform = self.tf_buffer.lookup_transform('base_link', tag_name, now)
                     self.get_logger().info(f"Found Requested Tag:\n{transform}")
-                    pan_command = {'joint': 'joint_head_pan', 'delta': -self.pan_step_size}
+                    pan_command = {'joint': 'joint_head_pan', 'delta': -0.5 * self.pan_step_size}
                     self.send_command(pan_command)
                     self.transform_pub.publish(transform)
                     return transform

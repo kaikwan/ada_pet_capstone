@@ -26,3 +26,10 @@ const startArucoTagSearch = () => {
         console.log('Tag search result:', result.success, result.message);
     });
 };
+
+const startAlignToTag = () => {
+    const alignToTagReq = new ROSLIB.ServiceRequest({});
+    alignToTag.callService(alignToTagReq, function (result) {
+        console.log('Tag align result:', result.success, result.message);
+    });
+};

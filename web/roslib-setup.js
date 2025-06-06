@@ -11,6 +11,12 @@ const startTagSearch = new ROSLIB.Service({
   serviceType: 'std_srvs/Trigger',
 });
 
+const alignToTag = new ROSLIB.Service({
+  ros: ros,
+  name: '/align_to_tag',
+  serviceType: 'std_srvs/Trigger',
+});
+
 // Create subscription to the camera video topic
 const subscribeToCameraVideo = () => {
   let cameraImage = document.getElementById("cameraImage");

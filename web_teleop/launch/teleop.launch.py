@@ -61,6 +61,14 @@ def generate_launch_description():
         name='aruco_tag_locator',
         output='screen',
     )
+
+    # ros2 run web_teleop align_to_aruco 
+    align_to_tag_node = Node(
+        package='web_teleop',
+        executable='align_to_aruco',
+        name='align_to_aruco',
+        output='screen',
+    )
     ########################################3
     # Navigation launch
     teleop_type_param = DeclareLaunchArgument(
@@ -132,6 +140,7 @@ def generate_launch_description():
             play_sound_node,
             stretch_aruco_launch,
             tag_locator_node,
+            align_to_tag_node,
 
             teleop_type_param,
             use_sim_time_param,
