@@ -286,6 +286,23 @@ const stopJoystickCommandLoop = () => {
   joystickInterval = null;
 };
 
+// Bind base control buttons
+document.getElementById("btn-forward").addEventListener("click", () => {
+  executeFollowJointTrajectory(["translate_mobile_base"], [BASE_MOVE_INCREMENT]);
+});
+
+document.getElementById("btn-backward").addEventListener("click", () => {
+  executeFollowJointTrajectory(["translate_mobile_base"], [-BASE_MOVE_INCREMENT]);
+});
+
+document.getElementById("btn-left").addEventListener("click", () => {
+  executeFollowJointTrajectory(["rotate_mobile_base"], [BASE_ROTATE_INCREMENT]);
+});
+
+document.getElementById("btn-right").addEventListener("click", () => {
+  executeFollowJointTrajectory(["rotate_mobile_base"], [-BASE_ROTATE_INCREMENT]);
+});
+
 // Start continuous movement for the selected joint
 const startMoveSelectedJoint = (direction) => {
   if (!jointInterval) {
