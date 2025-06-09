@@ -1,4 +1,4 @@
-<!-- Base HTML index.html file restored to original state before Tailwind modifications -->
+<!-- filepath: /Users/henri/ada_pet_capstone/web/index.html -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -17,36 +17,45 @@
     <script src="ui.js" defer></script>
     <script src="audio.js" defer></script>
     <script src="nav.js" defer></script>
-  
   </head>
-    <body>
-      <h1>Assistive Pet Robot</h1>
-      <p id="connection">Connecting...</p>
 
-      <div id="all-containers" class="main-container">
-        <div class="tab-container">
-          <div class="tabs">
+  <body>
+    <h1>Assistive Pet Robot</h1>
+    <p id="connection">Connecting...</p>
+
+    <!-- Main container for camera and controls in a row -->
+    <div id="all-containers" class="main-container">
+      <!-- Tabs for switching between camera and map views -->
+      <div class="tab-container">
+        <div class="tabs">
           <button class="tab-button active" data-tab="camera">Camera View</button>
           <button class="tab-button" data-tab="mapTab">Map View</button>
         </div>
-          <div class="tab-content">
-            <div id="camera" class="tab-pane active">
-              <div class="camera-view-container">
-                <div class="camera-wrapper">
-                  <img id="cameraImage" alt="Camera View" />
-                </div>
-                <div class="camera-wrapper gripper">
-                  <img id="gripperImage" alt="Gripper View" />
-                </div>
+
+        <!-- Tab content containers -->
+        <div class="tab-content">
+          <!-- Camera Section (shown by default) -->
+          <div id="camera" class="tab-pane active">
+            <div class="camera-view-container">
+              <div class="camera-wrapper">
+                <img id="cameraImage" alt="Camera View" />
+              </div>
+              <div class="camera-wrapper gripper">
+                <img id="gripperImage" alt="Gripper View" />
               </div>
             </div>
-            <div id="mapTab" class="tab-pane">
-              <div id="map" onload="init_map()"></div>
-            </div>
+          </div>
+
+          <!-- Map Section (initially hidden) -->
+          <div id="mapTab" class="tab-pane">
+            <div id="map" onload="init_map()"></div>
           </div>
         </div>
+      </div>
 
-        <div class="controls-outer">
+      <!-- Controls Section -->
+      <div class="controls-outer">
+        <div id="controls-container">
           <!-- First Row: Base Control, Keyframe and Audio Controls -->
           <div class="controls-row">
             <!-- Base Control -->
@@ -67,15 +76,17 @@
               <ul>
                 <li>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="recordKeyframe()">Record Keyframe</button>
-                    <button class="modern-btn" onClick="resetKeyframes()">Reset Keyframes</button>
+                    <button onClick="recordKeyframe()">Record Keyframe</button>
+                    <button onClick="resetKeyframes()">Reset Keyframes</button>
                   </div>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="playbackKeyframes()">Playback Keyframes</button>
-                    <button class="modern-btn" onClick="loopKeyframes()">Loop Keyframes</button>
+                    <button onClick="playbackKeyframes()">
+                      Playback Keyframes
+                    </button>
                   </div>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="stopKeyframeLoop()">Stop Loop</button>
+                    <button onClick="loopKeyframes()">Loop Keyframes</button>
+                    <button onClick="stopKeyframeLoop()">Stop Loop</button>
                   </div>
                 </li>
               </ul>
@@ -86,21 +97,21 @@
           <div class="controls-row">
             <!-- High LeveL Control Section -->
             <div class="control-column">
-              <h2>Quick Controls</h2>
-              <ul>
-                <li>
-                  <div class="button-row">
-                    <button class="modern-btn" onClick="navToFixedPoint()">Nav To Wand</button>
-                    <button class="modern-btn" onClick="startArucoTagSearch()">Look for Aruco</button>
-                    <button class="modern-btn" onClick="startAlignToTag()">Align to Aruco</button>
-                  </div>
-                  <div class="button-row">
-                    <button class="modern-btn" onClick="quickStow()">Quick Stow</button>
-                    <button class="modern-btn" onClick="pregraspToy()">Pregrasp Toy</button>
-                    <button class="modern-btn" onClick="graspToy()">Grasp Toy</button>
-                  </div>
-                </li>
-              </ul>
+            <h2>Quick Controls</h2>
+            <ul>
+              <li>
+                <div class="button-row">
+                  <button onClick="navToFixedPoint()">Nav To Wand</button>
+                  <button onClick="startArucoTagSearch()">Look for Aruco</button>
+                  <button onClick="startAlignToTag()">Align to Aruco</button>
+                </div>
+                <div class="button-row">
+                  <button onClick="quickStow()">Quick Stow</button>
+                  <button onClick="pregraspToy()">Pregrasp Toy</button>
+                  <button onClick="graspToy()">Grasp Toy</button>
+                </div>
+              </li>
+            </ul>
             </div>
 
             <!-- Audio Control Section -->
@@ -109,16 +120,16 @@
               <ul>
                 <li>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="playSound('meow')">Meow</button>
-                    <button class="modern-btn" onClick="playSound('food')">Food</button>
+                    <button onClick="playSound('meow')">Meow</button>
+                    <button onClick="playSound('food')">Food</button>
                   </div>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="playSound('squeak')">Squeak!</button>
-                    <button class="modern-btn" onClick="playSound('chirp')">Chirp!</button>
+                    <button onClick="playSound('squeak')">Squeak!</button>
+                    <button onClick="playSound('chirp')">Chirp!</button>
                   </div>
-                </li>
-              </ul>
-            </div>
+      </li>
+    </ul>
+  </div>
           </div>
 
           <!-- Third Row: Wrist Control and Lift/Arm Control -->
@@ -127,7 +138,7 @@
             <div class="control-column">
               <h2>Wrist Control</h2>
               <ul>
-                <li class="inline-control">
+                <li>
                   <label for="jointSelect">Select Joint:</label>
                   <select id="jointSelect">
                     <option value="yaw">Yaw</option>
@@ -135,9 +146,12 @@
                     <option value="roll">Roll</option>
                   </select>
                 </li>
-                <li class="inline-control">
+                <li>
                   <label for="speedSelect">Wrist Speed:</label>
-                  <select id="speedSelect" onchange="updateJointSpeed(this.value)">
+                  <select
+                    id="speedSelect"
+                    onchange="updateJointSpeed(this.value)"
+                  >
                     <option value="slow">Slow</option>
                     <option value="fast">Fast</option>
                   </select>
@@ -149,16 +163,30 @@
                 </li>
                 <li>
                   <div class="button-row">
-                    <button class="modern-btn" onmousedown="startMoveSelectedJoint(-1)" onmouseup="stopMoveSelectedJoint()" onmouseleave="stopMoveSelectedJoint()">Move selected joint left</button>
-                    <button class="modern-btn" onmousedown="startMoveSelectedJoint(1)" onmouseup="stopMoveSelectedJoint()" onmouseleave="stopMoveSelectedJoint()">Move selected joint right</button>
+                    <button
+                      onmousedown="startMoveSelectedJoint(-1)"
+                      onmouseup="stopMoveSelectedJoint()"
+                      onmouseleave="stopMoveSelectedJoint()"
+                    >
+                      Move selected joint left
+                    </button>
+                    <button
+                      onmousedown="startMoveSelectedJoint(1)"
+                      onmouseup="stopMoveSelectedJoint()"
+                      onmouseleave="stopMoveSelectedJoint()"
+                    >
+                      Move selected joint right
+                    </button>
                   </div>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="openGripper()">Open gripper</button>
-                    <button class="modern-btn" onClick="closeGripper()">Close gripper</button>
+                    <button onClick="openGripper()">Open gripper</button>
+                    <button onClick="closeGripper()">Close gripper</button>
                   </div>
                 </li>
                 <li>
-                  <button class="modern-btn" onClick="resetWristToDefault()">Reset wrist to default</button>
+                  <button onClick="resetWristToDefault()">
+                    Reset wrist to default
+                  </button>
                 </li>
               </ul>
             </div>
@@ -167,7 +195,7 @@
             <div class="control-column">
               <h2>Lift and Arm Control</h2>
               <ul>
-                <li class="inline-control">
+                <li>
                   <label for="controlSelect">Select Control:</label>
                   <select id="controlSelect">
                     <option value="lift">Lift</option>
@@ -176,24 +204,43 @@
                 </li>
                 <li>
                   <label for="controlSlider">Control Position:</label>
-                  <input id="controlSlider" type="range" step="0.01" value="0" />
+                  <input
+                    id="controlSlider"
+                    type="range"
+                    step="0.01"
+                    value="0"
+                  />
                   <span id="controlValue">0</span> meters
                 </li>
                 <li>
                   <div class="button-row">
-                    <button class="modern-btn" onmousedown="startMoveSelectedControl(-1)" onmouseup="stopMoveSelectedControl()" onmouseleave="stopMoveSelectedControl()">Move control down</button>
-                    <button class="modern-btn" onmousedown="startMoveSelectedControl(1)" onmouseup="stopMoveSelectedControl()" onmouseleave="stopMoveSelectedControl()">Move control up</button>
+                    <button
+                      onmousedown="startMoveSelectedControl(-1)"
+                      onmouseup="stopMoveSelectedControl()"
+                      onmouseleave="stopMoveSelectedControl()"
+                    >
+                      Move control down
+                    </button>
+                    <button
+                      onmousedown="startMoveSelectedControl(1)"
+                      onmouseup="stopMoveSelectedControl()"
+                      onmouseleave="stopMoveSelectedControl()"
+                    >
+                      Move control up
+                    </button>
                   </div>
                 </li>
                 <li>
                   <div class="button-row">
-                    <button class="modern-btn" onClick="homeTheRobot()">Home Robot</button>
-                    <button class="modern-btn" onClick="stowTheRobot()">Stow Robot</button>
+                    <button onClick="homeTheRobot()">Home Robot</button>
+                    <button onClick="stowTheRobot()">Stow Robot</button>
                   </div>
                 </li>
                 <li>
                   <div class="button-row">
-                    <button class="modern-btn" id="runstopButton" onClick="toggleRunstop()">Runstop OFF</button>
+                    <button id="runstopButton" onClick="toggleRunstop()">
+                      Runstop OFF
+                    </button>
                   </div>
                 </li>
               </ul>
